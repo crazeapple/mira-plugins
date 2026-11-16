@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # mira-plugins 统一门禁——本地与 CI 同一入口，节：
-#   1 插件 manifest 校验：sdd/.claude-plugin/plugin.json （--strict）
-#   2 市场 manifest 校验：.claude-plugin/marketplace.json（--strict）
-#   3 session-start hook 测试：运行 sdd/tests/test-session-start.sh
-#   4 版本三点一致：plugin.json ↔ marketplace 条目 ↔ tmpl-registry schema
-#   5 markdownlint：全仓 md（禁用 MD013 MD060——对中文不适用）
-#   6 sdd: 引用完整性：全仓 md 中的逻辑地址与真实路径引用
-#   7 模板形状守卫：sdd/templates/*.md 表格列数一致 + 无实例数据
+#   1 JSON 可解析：.claude-plugin/marketplace.json / sdd/.claude-plugin/plugin.json / sdd/hooks/hooks.json
+#   2 插件 manifest 校验：sdd/.claude-plugin/plugin.json （--strict）
+#   3 市场 manifest 校验：.claude-plugin/marketplace.json（--strict）
+#   4 session-start hook 测试：运行 sdd/tests/test-session-start.sh
+#   5 版本一致：plugin.json ↔ marketplace 条目 ↔ tmpl-registry schema + CHANGELOG 对应节
+#   6 markdownlint：全仓 md（禁用 MD013 MD060——对中文不适用）
+#   7 sdd: 引用完整性：全仓 md 中的逻辑地址与真实路径引用
+#   8 模板形状守卫：sdd/templates/*.md 表格列数一致 + 无实例数据
 # 依赖 node 与 npx
 set -uo pipefail
 
@@ -19,31 +20,41 @@ record() {
   if [ "$1" -eq 0 ]; then echo "  ✔ $2"; else echo "  ✘ $2"; FAILURES=$((FAILURES + 1)); fi
 }
 
-section "1. 插件 manifest 校验（--strict）"
+section "1. JSON 可解析"
+node -e '
+const fs = require("fs");
+for (const f of [".claude-plugin/marketplace.json", "sdd/.claude-plugin/plugin.json", "sdd/hooks/hooks.json"]) {
+  try { JSON.parse(fs.readFileSync(f, "utf8")); }
+  catch (e) { console.error("    " + f + "  " + e.message); process.exit(1); }
+}
+'
+record $? "marketplace / plugin / hooks 三个 JSON 可解析"
+
+section "2. 插件 manifest 校验（--strict）"
 out=$(claude plugin validate ./sdd --strict 2>&1)
 rc=$?
 record $rc "claude plugin validate ./sdd --strict"
 if [ $rc -ne 0 ]; then printf '%s\n' "$out" | tail -5; fi
 
-section "2. 市场 manifest 校验（--strict）"
+section "3. 市场 manifest 校验（--strict）"
 out=$(claude plugin validate . --strict 2>&1)
 rc=$?
 record $rc "claude plugin validate . --strict"
 if [ $rc -ne 0 ]; then printf '%s\n' "$out" | tail -5; fi
 
-section "3. session-start 测试"
+section "4. session-start 测试"
 bash sdd/tests/test-session-start.sh || FAILURES=$((FAILURES + 1))
 
-section "4. 版本三点一致"
+section "5. 版本一致"
 bash sdd/tests/test-version-consistency.sh || FAILURES=$((FAILURES + 1))
 
-section "5. markdownlint（禁用 MD013 MD060——对中文不适用）"
-out=$(npx -y markdownlint-cli --disable MD013 MD060 -- "**/*.md" 2>&1)
+section "6. markdownlint（禁用 MD013 MD060——对中文不适用）"
+out=$(npx -y markdownlint-cli@0.50.0 --disable MD013 MD060 -- "**/*.md" 2>&1)
 rc=$?
 record $rc "markdownlint 零 error"
 if [ $rc -ne 0 ]; then printf '%s\n' "$out" | head -20; fi
 
-section "6. sdd: 引用完整性"
+section "7. sdd: 引用完整性"
 node -e '
 const fs = require("fs"), path = require("path");
 const root = process.argv[1];
@@ -76,7 +87,7 @@ if (dead.length) { console.error(dead.map(s => "    " + s).join("\n")); process.
 ' "$REPO"
 record $? "逻辑地址与真实路径引用全部存在"
 
-section "7. 模板形状守卫（表格列数一致 + 无实例数据）"
+section "8. 模板形状守卫（表格列数一致 + 无实例数据）"
 node -e '
 const fs = require("fs"), path = require("path");
 const dir = process.argv[1];

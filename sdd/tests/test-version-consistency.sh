@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 校验插件版本三点一致：plugin.json ↔ marketplace.json 条目 ↔ tmpl-registry schema 行
-# （claude plugin validate 交叉核对前两者，模板 schema 行是它的盲区——本测试补位）
+# 校验插件版本一致：plugin.json ↔ marketplace.json 条目 ↔ tmpl-registry schema 行；CHANGELOG.md 有对应版本节
+# （claude plugin validate 交叉核对前两者，模板 schema 行与 CHANGELOG 节是它的盲区——本测试补位）
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -28,13 +28,21 @@ if ! values=$(read_values); then
 fi
 
 unique_count=$(printf '%s\n' "$values" | sort -u | wc -l | tr -d ' ')
-if [ "$unique_count" -eq 1 ]; then
-  echo "  [PASS] 版本三点一致: $(printf '%s\n' "$values" | head -1)"
-  echo "STATUS: PASSED"
-  exit 0
+if [ "$unique_count" -ne 1 ]; then
+  echo "  [FAIL] 版本漂移（plugin.json / marketplace 条目 / 模板 schema）:"
+  printf '%s\n' "$values" | sed 's/^/    /'
+  echo "STATUS: FAILED"
+  exit 1
 fi
 
-echo "  [FAIL] 版本漂移（plugin.json / marketplace 条目 / 模板 schema）:"
-printf '%s\n' "$values" | sed 's/^/    /'
-echo "STATUS: FAILED"
-exit 1
+version=$(printf '%s\n' "$values" | head -1)
+if grep -q "^## $version" "$REPO/CHANGELOG.md"; then
+  echo "  [PASS] 版本三点一致: $version"
+  echo "  [PASS] CHANGELOG 有版本节: ## $version"
+else
+  echo "  [FAIL] CHANGELOG.md 缺少版本节: ## $version"
+  echo "STATUS: FAILED"
+  exit 1
+fi
+echo "STATUS: PASSED"
+exit 0
