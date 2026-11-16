@@ -7,7 +7,7 @@
 → 版本 bump（按 REGISTRY 配置 versioning）
 → 写 CHANGELOG
 → 发布提交（仅版本号 + CHANGELOG 变更）
-→ 打 tag（tag 名 = 版本号）
+→ 打 tag（tag 名跟随既有版本 tag 形态）
 → 清理（删 test/<codename>、dev/<codename>、worktree）
 ```
 
@@ -29,7 +29,7 @@
 
 ### tag
 
-`git tag <版本号>` 于发布提交；无附加说明需求时用轻量 tag。
+`git tag <tag 名>` 于发布提交；tag 名跟随既有版本 tag 形态（`git tag -l` 查最近版本 tag 的形态；无既有版本 tag 用裸版本号）；无附加说明需求时用轻量 tag。
 
 ## 挂起恢复程序（验证失败达上限后，人工介入恢复时）
 
