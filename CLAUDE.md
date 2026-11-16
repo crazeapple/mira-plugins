@@ -30,6 +30,11 @@ bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint 
 
 行为验收：干净目录执行 `claude -p --max-turns 12 --plugin-dir ./sdd "一句话需求"`，首反应必须是治理行为（init 建议或 intake 澄清），不得写代码。
 
+## Git 纪律
+
+- 提交信息：标题动词开头；正文不折行，条目一行一个
+- 提交与推送前统一门禁全绿
+
 ## 开发迭代
 
 `claude --plugin-dir ./sdd` 单会话加载（可与其他 `--plugin-dir` 并传），改完重开会话生效。
@@ -50,5 +55,5 @@ bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint 
 | 受理 | intake | 需求进入治理 | |
 | 模板 | `sdd/templates/tmpl-*.md` | 治理文档的样板：逐字落盘，改即全局生效 | |
 | 推进方式 | `mode: unattended / interactive` | 阶段推进要不要人机交互：unattended 无需值守，interactive 每阶段与用户交互 | 模式、阶段衔接 |
-| 治理形态 | `sdd-kind: standalone / inline` | 治理树存放形态：standalone 不随项目仓提交、内嵌独立 git 仓（可本地私有，也可推私有远程仓库）；inline 随项目仓提交 | |
+| 治理形态 | `sdd-kind: standalone / inline` | 治理树存放形态：standalone 不随项目仓提交、内嵌独立 Git 仓（可本地私有，也可推私有远程仓库）；inline 随项目仓提交 | |
 | 模式 | `schema` | 治理结构的版本戳：值取自 sdd 版本，模板对齐判据 | 治理规范、锚点 |
