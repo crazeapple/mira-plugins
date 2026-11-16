@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "sdd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "需求治理技能集：从一句话需求到验收发布的全程治理（受理、规格、实现、验收、发布、导出），会话开始自动注入",
   "license": "MIT",
   "author": {
