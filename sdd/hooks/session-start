@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# sdd SessionStart 注入脚本
+# 机制来源：obra/superpowers hooks/session-start（经 superpowers-plugin-kit 模板适配）。
+#
+# 作用：会话开始时读取 skills/bootstrap/SKILL.md，包上 <EXTREMELY_IMPORTANT> 后按
+# 当前 harness 的 JSON 约定打印到 stdout，由 harness 注入模型上下文。
+#
+# ⚠️ 文件名保持无扩展名（session-start，不是 session-start.sh）：
+#    Claude Code 的 Windows 处理会给含 .sh 的命令自动加 bash 前缀 → 双重执行。
+set -euo pipefail
+
+# 元技能路径（相对插件根）；目录/frontmatter name/SKILL_REL 三处必须一致
+SKILL_REL="${SKILL_REL:-skills/bootstrap/SKILL.md}"
+
+# 注入导语：bootstrap 已随本脚本注入，勿再经技能机制重复加载。
+PREAMBLE="${PREAMBLE:-已加载 sdd 需求治理技能系统。以下是你 bootstrap 技能的全文——它已加载，勿重复加载；其余 sdd 技能经平台技能机制调用（sdd:init、sdd:intake、sdd:spec、sdd:start、sdd:accept、sdd:export）。}"
+
+# ── 定位插件根。不用 dirname：SessionStart hook 可能在空/坏 PATH 下启动
+#    （anthropics/claude-code#43127），外部命令可能无法解析 ──
+case "$0" in
+  */*|*\\*) SCRIPT_DIR="$(cd "${0%[/\\]*}" && pwd)" ;;
+  *) SCRIPT_DIR="$(pwd)" ;;
+esac
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# 寻址依据：注入态没有技能路径上下文，告诉模型 sdd: 逻辑地址锚在哪个目录
+PLUGIN_ROOT_HINT="${PLUGIN_ROOT_HINT:-本插件安装根：${PLUGIN_ROOT}——正文中 sdd: 开头的文件路径即此目录下的相对路径}"
+
+skill_md="${PLUGIN_ROOT}/${SKILL_REL}"
+if [ -r "$skill_md" ]; then
+  skill_content="$(<"$skill_md")"   # bash 内建读文件，不依赖 cat
+else
+  skill_content="Error reading bootstrap skill: ${SKILL_REL}"
+fi
+
+# ── JSON 转义：纯 bash 参数替换，每个 ${s//old/new} 是单次 C 级扫描 ──
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+skill_escaped=$(escape_for_json "$skill_content")
+preamble_escaped=$(escape_for_json "$PREAMBLE")
+plugin_root_hint_escaped=$(escape_for_json "$PLUGIN_ROOT_HINT")
+session_context="<EXTREMELY_IMPORTANT>\n${preamble_escaped}\n${plugin_root_hint_escaped}\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
+
+# ── 输出 JSON。printf 经 cat 管道以吸收 Windows Git Bash 的 EPIPE
+#    （superpowers#1612）；cat 不在 PATH 时退回裸 printf（superpowers#2310）──
+emit_json() {
+  if command -v cat >/dev/null 2>&1; then
+    printf "$@" | cat
+  else
+    printf "$@"
+  fi
+}
+
+# 每家 harness 消费的 JSON 字段不同；Claude Code 读两个字段且不去重，
+# 多发任何字段即双重注入——只发当前平台消费的那一个。
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  # Cursor（可能同时设置 CLAUDE_PLUGIN_ROOT，必须先判）
+  emit_json '{\n  "additional_context": "%s"\n}\n' "$session_context"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  # Claude Code
+  emit_json '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
+else
+  # Copilot CLI（设 COPILOT_CLI=1）及其他 SDK 标准平台
+  emit_json '{\n  "additionalContext": "%s"\n}\n' "$session_context"
+fi
+
+exit 0
