@@ -31,7 +31,7 @@ claude plugin update sdd@mira-plugins
 
 | 技能 | 管什么 |
 |---|---|
-| sdd:init | 建立治理树：四文件治理文档、双形态、模板对齐与重建 |
+| sdd:init | 建立治理树：REGISTRY 与治理配置、双形态、模板对齐与重建 |
 | sdd:intake | 受理一切新需求/想法/文档：三问分流、意图池、澄清拆分、立项探索 |
 | sdd:spec | 写规格：范围内外、验收标准表（可核对契约）、设计与任务派生 |
 | sdd:start | 实现：默认派发子 Agent 开发、分支 + worktree 隔离、任务边界提交、流水线循环 |
@@ -58,7 +58,7 @@ claude plugin update sdd@mira-plugins
             └── P-001-TASKS.md   # 任务：执行拆解与完成记录
 ```
 
-两种形态：**inline** 随项目仓提交，团队可见；**standalone**（默认）不随项目仓提交——内嵌独立 git 仓，可本地私有，也可推私有远程仓库。卸载插件零影响：治理树是纯 Markdown，任何工具可继续使用。
+两种形态：**inline** 随项目仓提交，团队可见；**standalone**（默认）不随项目仓提交——内嵌独立 git 仓，可本地私有，也可推私有远程仓库。REGISTRY 建立即在；INTENT/JOURNAL/AMENDMENTS 首次写入时出现。卸载不丢数据、不锁定格式：治理树是纯 Markdown，可读、可审计、可迁移；继续治理流程需 sdd 插件在位。
 
 ## 设计
 

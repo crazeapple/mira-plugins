@@ -43,7 +43,7 @@ bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint 
 
 | 中文概念 | 标识 | 含义 | 错误示例 |
 | --- | --- | --- | --- |
-| 治理根 | `<项目根>/.mira/sdd/` | 治理树所在目录：四文件 + `proposals/` | 账本 |
+| 治理根 | `<项目根>/.mira/sdd/` | 治理树所在目录：REGISTRY 必在 + `proposals/`，INTENT/JOURNAL/AMENDMENTS 首写出现 | 账本 |
 | 登记簿 | REGISTRY.md | 执行维度登记：提案表与治理配置 | 账本、总表 |
 | 意图池 | INTENT.md | 需求维度登记：全部意图的原话、边界与去向 | 构想池、台账 |
 | 探索底稿 | JOURNAL.md | 定规格前澄清、探索、选定与否决的过程留痕，追加不重写 | 日志、留痕 |
@@ -53,7 +53,7 @@ bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint 
 | 任务 | `P-XXX-TNN` | 提案内一次提交粒度的实现步骤 | |
 | 代号 | codename | 具体提案的公开侧名称（用作分支名、worktree 目录），与提案的对应关系登记在 REGISTRY 提案表中 | |
 | 受理 | intake | 需求进入治理 | |
-| 模板 | `sdd/templates/tmpl-*.md` | 治理文档的样板：逐字落盘，改即全局生效 | |
+| 模板 | `sdd/templates/tmpl-*.md` | 治理文档的结构参照：写入时取用，占位不落盘，改即全局生效 | |
 | 推进方式 | `mode: unattended / interactive` | 阶段推进要不要人机交互：unattended 无需值守，interactive 每阶段与用户交互 | 模式、阶段衔接 |
 | 治理形态 | `sdd-kind: standalone / inline` | 治理树存放形态：standalone 不随项目仓提交、内嵌独立 Git 仓（可本地私有，也可推私有远程仓库）；inline 随项目仓提交 | |
 | 模式 | `schema` | 治理结构的版本戳：值取自 sdd 版本，模板对齐判据 | 治理规范、锚点 |

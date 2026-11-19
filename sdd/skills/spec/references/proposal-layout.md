@@ -1,6 +1,6 @@
 # proposal-layout.md — 提案三文件说明
 
-提案目录 `proposals/P-XXX/` 内文件一律**带提案号前缀**。**提案无独立 PROPOSAL 文件**——问题/目标并入 SPEC 背景，来源意图以 frontmatter `intent: I-XXX` 回链。三个文件的模板在 `sdd:templates/`（tmpl-spec、tmpl-design、tmpl-tasks），逐字落盘，尖括号占位处填实；三文件 frontmatter 同构（`id`/`type` 由文件名可推导，静态冗余，为同构保留），标题入 H1。
+提案目录 `proposals/P-XXX/` 内文件一律**带提案号前缀**。**提案无独立 PROPOSAL 文件**——问题/目标并入 SPEC 背景，来源意图以 frontmatter `intent: I-XXX` 回链。三个文件的模板在 `sdd:templates/tmpl-*.md`（tmpl-spec、tmpl-design、tmpl-tasks），按模板创建、占位处填实；三文件 frontmatter 同构（`id`/`type` 由文件名可推导，静态冗余，为同构保留），标题入 H1。
 
 - frontmatter `version` 是**提案级版本号**（仅 SPEC 有）：spec 定稿后每次变更自增（spec 期内改不算，定稿从 v1 起算）
 - `intent` 是来源意图的静态回链（提案归属永不变，指路 JOURNAL 澄清成形段）；兄弟提案与意图完结推导查 REGISTRY 提案表 `intent` 列

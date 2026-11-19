@@ -31,8 +31,8 @@ description: 每个会话开始由 SessionStart hook 整篇注入（不经技能
 
 ## 横切纪律（任何阶段都生效）
 
-- **插单不打断**——当前工作永不因新想法自动转向；新想法只进 INTENT（由 sdd:intake 捕获）
-- **无任务不写码**——写代码必须挂已定稿提案的任务
+- **插单不打断**——当前工作永不因新想法自动转向；新想法在捕获时当场分类：咨询即答，余者入池
+- **无任务不写码**——写代码必须挂已定稿提案的任务，或挂判直做的意图
 - **开发中推翻已生效方案** → 必记 AMENDMENTS（格式：`sdd:templates/tmpl-amendments.md`；程序：`sdd:skills/init/references/governance-files.md`）
 - **提交前必过门禁**（程序：`sdd:skills/start/references/gate.md`——无论何时、谁发起的提交，先读它）
 - **治理写入即提交**——standalone 治理仓一笔提交只含一个关注点，状态迁移即时提交，探索、回填等过程性写入在一次响应收口时合为一笔（程序：`sdd:skills/init/references/governance-files.md`）

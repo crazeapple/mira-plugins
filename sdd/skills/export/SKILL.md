@@ -15,7 +15,7 @@ description: 当用户要把项目知识导出给外部视角（「导出需求�
 
 ### 1. 只读采集
 
-读 REGISTRY + INTENT + JOURNAL + 各提案 SPEC/DESIGN + AMENDMENTS。**只读**——本技能除落一个导出文件外不写任何东西。
+读 REGISTRY + INTENT + JOURNAL + 各提案 SPEC/DESIGN + AMENDMENTS（INTENT/JOURNAL/AMENDMENTS 不存在视为空）。**只读**——本技能除落一个导出文件外不写任何东西。
 
 ### 2. 提炼转写
 
