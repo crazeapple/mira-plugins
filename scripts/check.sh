@@ -6,8 +6,9 @@
 #   4 session-start hook 测试：运行 sdd/tests/test-session-start.sh
 #   5 版本一致：plugin.json ↔ marketplace 条目 ↔ tmpl-registry schema + CHANGELOG 对应节
 #   6 markdownlint：全仓 md（禁用 MD013 MD060——对中文不适用）
-#   7 sdd: 引用完整性：全仓 md 中的逻辑地址与真实路径引用
-#   8 模板形状守卫：sdd/templates/*.md 表格列数一致 + 无实例数据
+#   7 sdd: 引用完整性：全仓 md（CHANGELOG 除外）中 sdd: 路径形指向存在 + 调用形为现行技能名
+#   8 步骤引用完整性：sdd/skills 内「第 N(-M) 步」三形态的目标步骤号存在
+#   9 模板形状守卫：sdd/templates/*.md 表格列数一致 + 无实例数据
 # 依赖 node 与 npx
 set -uo pipefail
 
@@ -62,10 +63,13 @@ const files = [];
 (function walk(d) {
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
     if (e.name === ".git" || e.name === "node_modules") continue;
+    if (e.name === "CHANGELOG.md" && d === root) continue; // 历史节不改史，不受现行有效性检查
     const p = path.join(d, e.name);
     if (e.isDirectory()) walk(p); else if (e.name.endsWith(".md")) files.push(p);
   }
 })(root);
+const skills = fs.readdirSync(path.join(root, "sdd", "skills"), { withFileTypes: true })
+  .filter(e => e.isDirectory()).map(e => e.name);
 const dead = [];
 const missing = (full, text, m) => {
   if (fs.existsSync(full)) return false;
@@ -82,12 +86,85 @@ for (const f of files) {
   for (const m of text.matchAll(/sdd\/(?:skills|templates|hooks|tests|\.claude-plugin)(?:\/[A-Za-z0-9._\-]+)+/g)) {
     if (missing(path.join(root, m[0]), text, m)) dead.push(rel + "  " + m[0]);
   }
+  // 调用形：sdd:<技能名>（后不接 /）须为现行技能名
+  for (const m of text.matchAll(/sdd:([A-Za-z][A-Za-z0-9\-]*)/g)) {
+    if (text[m.index + m[0].length] === "/") continue;
+    if (!skills.includes(m[1])) dead.push(rel + "  " + m[0] + "  （现行技能: " + skills.join(", ") + "）");
+  }
 }
 if (dead.length) { console.error(dead.map(s => "    " + s).join("\n")); process.exit(1); }
 ' "$REPO"
-record $? "逻辑地址与真实路径引用全部存在"
+record $? "路径形指向存在 + 调用形为现行技能名（CHANGELOG 除外）"
 
-section "8. 模板形状守卫（表格列数一致 + 无实例数据）"
+section "8. 步骤引用完整性"
+# 注意：本节只断言序号存在（悬空）；号在、指错步的错位裸号形态下不可机械判——重编号/删步后逐条核对引用指向，归评审
+node -e '
+const fs = require("fs"), path = require("path");
+const root = path.join(process.argv[1], "sdd", "skills");
+const errs = [];
+const steps = f => {
+  const set = new Set();
+  for (const l of fs.readFileSync(f, "utf8").split("\n")) {
+    const m = l.match(/^### (\d+)\. /);
+    if (m) set.add(Number(m[1]));
+  }
+  return set;
+};
+const summary = set => {
+  const ks = [...set].sort((a, b) => a - b);
+  if (!ks.length) return "无编号标题";
+  const parts = [];
+  let s = ks[0], p = ks[0];
+  for (const k of ks.slice(1)) {
+    if (k === p + 1) { p = k; continue; }
+    parts.push(s === p ? "" + s : s + "-" + p);
+    s = p = k;
+  }
+  parts.push(s === p ? "" + s : s + "-" + p);
+  return parts.join(", ");
+};
+const skillSteps = new Map(
+  fs.readdirSync(root, { withFileTypes: true })
+    .filter(e => e.isDirectory())
+    .map(e => [e.name, steps(path.join(root, e.name, "SKILL.md"))])
+);
+const files = [];
+(function walk(d) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) walk(p); else if (e.name.endsWith(".md")) files.push(p);
+  }
+})(root);
+const flag = (rel, no, ref, tgtName, tgt, lo, hi) => {
+  if (hi < lo) { errs.push(rel + ":" + no + "  " + ref + " → 区间倒序"); return; }
+  for (let n = lo; n <= hi; n++)
+    if (!tgt.has(n)) errs.push(rel + ":" + no + "  " + ref + " → " + tgtName + " 无步骤 " + n + "（现有: " + summary(tgt) + "）");
+};
+for (const f of files) {
+  const rel = path.relative(root, f);
+  const skill = rel.split(path.sep)[0];
+  const own = steps(f);
+  fs.readFileSync(f, "utf8").split("\n").forEach((line, i) => {
+    // 限定形最长匹配优先：整体消费，内层不再按裸形重解
+    const spans = [];
+    for (const m of line.matchAll(/(\w+ SKILL\.md|\w+ SKILL|SKILL\.md) ?第 ?(\d+)(?:-(\d+))? ?步/g)) {
+      spans.push([m.index, m.index + m[0].length]);
+      const q = m[1] === "SKILL.md" ? skill : m[1].replace(/ SKILL(\.md)?$/, "");
+      if (!skillSteps.has(q)) { errs.push(rel + ":" + (i + 1) + "  " + m[0] + " → 未知技能 " + q); continue; }
+      flag(rel, i + 1, m[0], q + "/SKILL.md", skillSteps.get(q), Number(m[2]), Number(m[3] ?? m[2]));
+    }
+    for (const m of line.matchAll(/第 ?(\d+)(?:-(\d+))? ?步/g)) {
+      if (spans.some(([a, b]) => m.index >= a && m.index < b)) continue;
+      if (!own.size) { errs.push(rel + ":" + (i + 1) + "  " + m[0] + " → 本文件无编号标题，裸引用指代不明（用 SKILL.md 第 N 步限定）"); continue; }
+      flag(rel, i + 1, m[0], "本文件", own, Number(m[1]), Number(m[2] ?? m[1]));
+    }
+  });
+}
+if (errs.length) { console.error(errs.map(s => "    " + s).join("\n")); process.exit(1); }
+' "$REPO"
+record $? "三形态步骤引用的目标步骤号全部存在"
+
+section "9. 模板形状守卫（表格列数一致 + 无实例数据）"
 node -e '
 const fs = require("fs"), path = require("path");
 const dir = process.argv[1];

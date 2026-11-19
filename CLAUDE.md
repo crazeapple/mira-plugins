@@ -25,7 +25,7 @@
 ## 验证
 
 ```bash
-bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint / sdd: 引用完整性 / 模板形状守卫（依赖 node、npx；markdownlint 禁用 MD013 MD060——对中文不适用）
+bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint / sdd: 引用完整性 / 步骤引用完整性 / 模板形状守卫（依赖 node、npx；markdownlint 禁用 MD013 MD060——对中文不适用）
 ```
 
 行为验收：干净目录执行 `claude -p --max-turns 12 --plugin-dir ./sdd "一句话需求"`，首反应必须是治理行为（init 建议或 intake 澄清），不得写代码。
@@ -34,6 +34,7 @@ bash scripts/check.sh   # 统一门禁入口：validate / 测试 / markdownlint 
 
 - 提交信息：标题动词开头；正文不折行，条目一行一个
 - 提交与推送前统一门禁全绿
+- 打 tag 前行为验收跑过一次（程序见「验证」节）
 
 ## 开发迭代
 
