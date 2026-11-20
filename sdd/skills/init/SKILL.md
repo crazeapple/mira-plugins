@@ -24,7 +24,7 @@ description: 当用户要在此项目建立/启用 sdd 治理（「初始化」�
 治理根固定为 `<项目根>/.mira/sdd/`。
 
 - **sdd-kind 默认 standalone**：项目 `.git/info/exclude` 追加 `.mira/sdd/`（不随项目仓提交、不推送），并在 `.mira/sdd/` 内嵌独立 git 仓（自有提交历史，可推私有远端备份）——公开面零治理痕迹。**不可变字段**：要 inline（随项目仓提交、团队可见）就在 init 首次确认时说一声，此后不可切换
-- 其余**回报时逐项列出全部可选值，默认值在前**：`versioning: semver / calver`（语义化版本 / 日历版本，不可切换）、`mode: unattended / interactive`（推进方式：无交互 / 交互式，项目过程中可改）、`verification: auto / manual`（验收执行者：系统自动验收 / 用户验收，项目过程中可改）
+- 其余**回报时逐项列出全部可选值，默认值在前**：`versioning: semver / calver`（语义化版本 / 日历版本，不可切换）、`mode: unattended / interactive`（unattended：各阶段由 Agent 推进，verification=auto 时从受理到发布无需值守；interactive：逐阶段与用户对话；项目过程中可改）、`verification: auto / manual`（验收执行者：系统自动验收 / 用户验收，项目过程中可改）
 - 落 REGISTRY.md（模板 `sdd:templates/tmpl-registry.md`，规则见 `references/governance-files.md`）：配置区按确认值 + 空提案表；INTENT/JOURNAL/AMENDMENTS 不落盘——首写时按模板整建（存在 ⇔ 至少一条真实条目）
 - 写项目 `.git/info/exclude`：`.export/` 与 `.worktrees/`（两形态都写）；`.mira/sdd/`（仅 standalone）。项目尚无 `.git` 时跳过并报告一句，重跑 init 时补写
 - 回报：治理根路径、形态、文件出生顺序（REGISTRY 必在，其余首写出现）；并声明「卸载不丢数据、不锁定格式——治理树是纯 Markdown，可读、可审计、可迁移；继续治理流程需 sdd 插件在位」

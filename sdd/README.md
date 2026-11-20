@@ -25,7 +25,7 @@ claude plugin update sdd@mira-plugins
 
 开发调试可免安装单会话加载：`claude --plugin-dir ./sdd`。
 
-## 装好后
+## 使用
 
 会话开始自动注入治理纪律与路由（bootstrap）。六个技能各管一段，你只管说话：
 
@@ -39,6 +39,8 @@ claude plugin update sdd@mira-plugins
 | sdd:export | 治理知识提炼为给外人看的单文件概览（只读） |
 
 问进度/看板不用调技能，直接说——有内置的只读汇总。
+
+默认配置（mode: unattended + verification: auto）下，从受理到发布全程由 Agent 推进，除 init 首次写入仓库需确认一次外无需值守；治理文件全部由 Agent 读写，留痕不占用人的时间。轻量模式、快速模式就是默认配置，无需另外开启。需要逐阶段对话时，把 mode 改为 interactive（项目过程中随时可改）——两种 mode 的文件、门禁、顺序完全一致，差别只在各阶段要不要人参与。
 
 ## 治理树
 

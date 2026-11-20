@@ -1,5 +1,5 @@
 ---
-schema: 1.1.0
+schema: 1.1.1
 mode: unattended
 verification: auto
 versioning: semver

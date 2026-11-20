@@ -166,9 +166,9 @@ sdd-kind: standalone / inline        # init 时定，不可变（默认 standalo
 2. 新建：sdd-kind 默认 standalone（`.git/info/exclude` 隐藏 + 内嵌仓，公开面零治理痕迹；
    不可逆安全侧缺省——改 inline 仅在 init 首次确认时明说，此后不可切换）
    其余回报时逐项列出全部可选值，默认值在前：versioning=semver / calver（语义化版本 /
-   日历版本，不可切换）、mode=unattended / interactive（推进方式：无交互 / 交互式，
-   项目过程中可改）、verification=auto / manual（验收执行者：系统自动验收 / 用户验收，
-   项目过程中可改）
+   日历版本，不可切换）、mode=unattended / interactive（unattended：各阶段由 Agent 推进，
+   verification=auto 时从受理到发布无需值守；interactive：逐阶段与用户对话；项目过程中
+   可改）、verification=auto / manual（验收执行者：系统自动验收 / 用户验收，项目过程中可改）
    → 落 REGISTRY.md（配置区按确认值 + 空提案表）；INTENT/JOURNAL/AMENDMENTS 不落盘，首写时按模板整建
    → 写 .git/info/exclude：.export/（两形态都写）；.mira/sdd/（仅 standalone）；
      项目无 .git 时跳过并报告
